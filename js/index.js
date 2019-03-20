@@ -1,5 +1,12 @@
 loadImg1 = new Image;
 loadImg1.src = "img/load1.png";
+
+function findImage(id) {
+    return imgArr.find(function(e) {
+        return e.id == id
+    })
+}
+
 var gameInstance = easyGame({
     canvas: document.getElementById("myCanvas")
 });
@@ -75,7 +82,9 @@ var imgArr = [{
 },
 {
     id: "rule",
-    url: "img/rule.png"
+    url: "img/rule.png",
+    width: 490,
+    height: 83
 }]
 gameInstance.loading(imgArr, function() {
     gameInstance.gameStart(),
@@ -105,10 +114,9 @@ gameInstance.extend({
         this.bglayer.push(a, b)
     },
     // 创建按钮
-    createrBtn: function(img, left, top) {
-        console.log('TCL: gameInstance.ctx', gameInstance.ctx)
-        var width = img.width,
-        height = img.height,
+    createrBtn: function(img, left, top, obj) {
+        var width = obj.width,
+            height = obj.height;
         instance = new easyGame.Bitmap({
             ctx: gameInstance.ctx,
             img: img,
@@ -118,31 +126,41 @@ gameInstance.extend({
             x: left,
             y: top,
             ct: 0,
-            obb: [0, 0, width, height]
+            obb: [0, 0, width, height],
+            // 设置比例
+            scaleX: .5,
+            scaleY: .5
+        });
+        return instance
+    },
+    createRule: function(img, left, top, obj) {
+        var width = obj.width,
+            height = obj.height;
+        instance = new easyGame.Bitmap({
+            ctx: gameInstance.ctx,
+            img: img,
+            width: width,
+            height: height,
+            static: 1,
+            x: left,
+            y: top,
+            ct: 0,
+            obb: [0, 0, width, height],
+            // 设置比例
+            scaleX: .5,
+            scaleY: .5
         });
         return instance
     },
     createStart: function() {
-        var a = this.createrBtn(gameInstance.getImg("startBtn"), 180, 600);
-        a.to({ y: gameInstance.pos_y - 180 }, 400, "Circ", "easeOut", 0, function() {
-            // 这个用来操作动画
-            a.update = function(a) {
+        var startBtn = this.createrBtn(gameInstance.getImg("startBtn"), 180, gameInstance.pos_y - 180, findImage('startBtn'));
+        startBtn.to({ y: gameInstance.pos_y - 180 }, 400, "Circ", "easeOut", 0, function() {
+            startBtn.update = function(a) {
                 this.ct += a,
                 this.y -= Math.sin(Math.PI / 500 * this.ct)
             }
         });
-        var b = new easyGame.Bitmap({
-            ctx: gameInstance.ctx,
-            img: gameInstance.getImg("rule"),
-            width: 360,
-            height: 128,
-            static: 1,
-            x: -180,
-            y: gameInstance.pos_y - 360
-        });
-        b.to({ x: 180 }, 500, "Back", "easeOut", 0),
-        this.btnlayer.push(b),
-        a.addEventListener("touchstart", function() {
+        startBtn.addEventListener("touchstart", function() {
             gameInstance.overBg.hide(),
             gameInstance.fx1.addEventListener("touchstart", function() {
                 gameInstance.fj.fx = "R"
@@ -156,7 +174,7 @@ gameInstance.extend({
             gameInstance.fx2.addEventListener("touchend", function() {
                 gameInstance.fj.fx = "CL"
             }),
-            b.to({ x: 580 }, 400, "Back", "easeIn", 0, function() {
+            rule.to({ x: 580 }, 400, "Back", "easeIn", 0, function() {
                 this.remove()
             }),
             this.to({ x: 620 }, 300, "Back", "easeIn", 0, function() {
@@ -164,7 +182,10 @@ gameInstance.extend({
                 gameInstance.onstop = 0
             })
         }),
-        this.btnlayer.push(a)
+        this.btnlayer.push(startBtn)
+        var rule = this.createRule(gameInstance.getImg("rule"), -180, gameInstance.pos_y - 360, findImage('rule'));
+        rule.to({ x: 180 }, 500, "Back", "easeOut", 0);
+        this.btnlayer.push(rule);
     },
     createBoo: function(a, b, c, d, e) {
         var f = a.width,
@@ -202,7 +223,7 @@ gameInstance.extend({
                 textAlign: "center"
             });
             b.to({ y: 180 }, 300, "Back", "easeOut", 200);
-            dp_submitScore(gameInstance.jl.n.toFixed(1));
+            displaySubmitScore(gameInstance.jl.n.toFixed(1));
             var c = new easyGame.TextField({
                 x: 180,
                 y: gameInstance.pos_y + 60,
@@ -258,7 +279,6 @@ gameInstance.extend({
         this.btnlayer = gameInstance.createLayer(),
         this.createStart(),
         this.createsquare(500, gameInstance.getImg("sg" + eG.Math.random(1, 6))),
-		console.log('TCL: gameInstance.getImg("sg" + eG.Math.random(1, 6))', gameInstance.getImg("sg" + eG.Math.random(1, 6)))
         gameInstance.getLast_y(),
         this.createsquare(this.last_y + 250, gameInstance.getImg("sg" + eG.Math.random(1, 6))),
         this.fj = new Plane({
@@ -447,9 +467,7 @@ gameInstance.extend({
 }),
 gameInstance.addEventListener("touchstart"),
 gameInstance.addEventListener("touchend");
-var square = eG.createBitmap({
-    kg: 1
-});
+var square = eG.createBitmap({ kg: 1 });
 square.prototype.update = function() {
     eG.OBBvsOBB(this.testObb(), gameInstance.fj.testObb()) && this.kg && !gameInstance.onstop && (this.kg = 0, gameInstance.collide()),
     this.y <= -this.height / 2 && this.kg && (this.kg = 0, 1 == this.type && (gameInstance.getLast_y(), gameInstance.createsquare(gameInstance.last_y + 250, gameInstance.getImg("sg" + eG.Math.random(1, 6)))), this.remove())

@@ -1,3 +1,6 @@
+var myData = {
+    gameid: 'zfj'
+}
 var mebtnopenurl = '#'
 var thegameurl = "#"
 var guanzhuurl = "#"
@@ -23,13 +26,13 @@ function clickMore() {
 function displayShare() {
     document.getElementById("shareImage").style.display = "block"
 }
-
-function displayRanking() {
-    window.location = mebtnopenurl
-}
 // 隐藏分享
 function hideShare() {
     document.getElementById('shareImage').style.display = 'none';
+}
+// 展示排行榜
+function displayRanking() {
+    window.location = mebtnopenurl
 }
 document.addEventListener('WeixinJSBridgeReady', function onBridgeReady() {
     WeixinJSBridge.on('menu:share:appmessage', function (argv) {
@@ -51,3 +54,25 @@ document.addEventListener('WeixinJSBridgeReady', function onBridgeReady() {
         }, onShareComplete)
     })
 }, false)
+
+// 展示提交分数
+function displaySubmitScore(score) {
+    myData.score = parseInt(score * 10)
+    myData.scoreName = '行走了' + score + '米'
+    document.title = '在寻根的路上，我行走了' + score + '米，小伙伴们快来挑战我吧！'
+    window.shareData.tTitle = document.title
+}
+// 分享完成回调
+function onShareComplete(res) {
+    if (localStorage.myuid && myData.score != undefined) {
+        setTimeout(function () {
+            if (confirm('？')) {
+                window.location = mebtnopenurl
+            } else {
+                document.location.href = mebtnopenurl
+            }
+        }, 500)
+    } else {
+        document.location.href = guanzhuurl
+    }
+}

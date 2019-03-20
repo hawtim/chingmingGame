@@ -27,6 +27,7 @@ function musicPlay(isPlay) {
 }
 
 function togglePlayStatus() {
+    console.log('toggle')
     var audio = document.getElementById('audioPlayer')
     var muted = document.getElementById('muted')
     var playing = document.getElementById('playing')

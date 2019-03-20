@@ -1,577 +1,693 @@
-!function(a) {
-    var b = function() {
-        var c = {},
-        d = arguments[0],
-        e = d.canvas,
-        f = e.width,
-        g = e.height;
-        return e.getContext("2d"),
-        c = {
+/*
+ * easyGame 游戏引擎 
+ * Copyright 2014.5~~ weiyang
+ *
+ * 采用矩形碰撞
+*/
+
+(function(window) {
+    var easyGame = function() {
+        //游戏对象
+        var game = {},
+        target = arguments[0],
+        canvas = target.canvas,
+        canvas_w = canvas.width,
+        canvas_h = canvas.height,
+        ctx = canvas.getContext("2d");
+
+        if (easyGame.versions.android || easyGame.versions.iPhone) {
+            canvas.style.width = "100%";
+            canvas.style.height = "100%";
+            /*			
+			document.getElementById("game").style.width = window.innerWidth+"px";
+			document.getElementById("game").style.height = window.innerHeight+"px";*/
+        }
+
+        game = {
             objList: [],
             imgList: {},
-            getImg: function(a) {
-                return this.imgList[a]
+            //通过图片id获取图片
+            getImg: function(id) {
+                return this.imgList[id];
             },
-            canvas: e,
-            fps: d.fps,
+
+            //获得canvas对象
+            canvas: canvas,
+            //游戏帧数
+            fps: target.fps,
+            //游戏时间轴
             timeline: 0,
-            ctx: e.getContext("2d"),
-            canWidth: f,
-            canHeight: g,
-            loading: function(a, b) {
-                this.l_t = 0,
+            ctx: canvas.getContext("2d"),
+            canWidth: canvas_w,
+            canHeight: canvas_h,
+            //移动端拉伸系数
+            p_x: 1,
+            p_y: 1,
+            //loading资源
+            loading: function(imglist, loadfuc) {
+                this.l_t = 0;
+                //图片初始化
                 this.imgList.length = 0;
-                for (var c = 0; c < a.length; c++) {
-                    var d = a[c];
-                    this.imgList[d.id] = new Image,
-                    this.imgList[d.id].src = d.url,
-                    this.imgList.length++
+                for (var i = 0; i < imglist.length; i++) {
+                    var img = imglist[i];
+                    this.imgList[img.id] = new Image();
+                    this.imgList[img.id].src = img.url;
+                    this.imgList.length++;
                 }
-                this.loadfuc = b;
-                var e = this;
+
+                this.loadfuc = loadfuc;
                 this.loadTimer = setInterval(function() {
-                    e.drawLoading()
-                },
-                30)
+                    this.drawLoading();
+                }.bind(this), 30);
+
             },
             setEmpty: function() {
-                this.objList = [],
-                this.offtimefuc(),
-                b.eventList = {}
+                this.objList = [];
+                this.offtimefuc();
+                easyGame.eventList = {};
             },
-            createLayer: function(a) {
-                var b = [];
-                return ! a || a >= this.objList.length - 1 ? this.objList.push(b) : 0 >= a ? this.objList.unshift(b) : this.objList.splice(a, 0, b),
-                b
+            //设置精灵层级关系
+            createLayer: function(index) {
+                var layer = [];
+                if (!index || index >= this.objList.length - 1) {
+                    this.objList.push(layer);
+                } else if (index <= 0) {
+                    this.objList.unshift(layer);
+                } else {
+                    this.objList.splice(index, 0, layer)
+                }
+                return layer;
             },
+
+            //内置loading绘制
             drawLoading: function() {
-                var a = 0,
-                b = this.ctx,
-                c = this.canWidth,
-                d = this.canHeight,
-                e = this.imgList.length;
-                for (i in this.imgList)"length" != i && this.imgList[i].complete && a++;
-                b.beginPath(),
-                b.clearRect(0, 0, c, d),
-                b.fillStyle = "#000",
-                b.fillRect(0, 0, c, d),
-                b.drawImage(loadImg1, 55, d / 2 - 17),
-                b.beginPath(),
-                b.fillStyle = "#4B9D3C",
-                b.fillRect(72, d / 2 - 10, (c - 146) / e * a, 23),
-                b.fill(),
-                b.beginPath(),
-                b.arc(72 + (c - 146) / e * a, d / 2 + 2, 11, Math.PI / 2, 3 * Math.PI / 2, 1),
-                b.fillStyle = "#4B9D3C",
-                b.fill(),
-                b.closePath(),
-                b.beginPath(),
-                b.arc(72, d / 2 + 2, 11, 3 * Math.PI / 2, Math.PI / 2, 1),
-                b.fillStyle = "#4B9D3C",
-                b.fill(),
-                b.closePath(),
-                b.save(),
-                b.beginPath(),
-                b.fillStyle = "#fff",
-                b.font = "bold 18px Arial",
-                b.shadowColor = "#000",
-                b.shadowOffsetY = 1,
-                b.textAlign = "center",
-                b.fillText("已加载" + Math.floor(100 * (a / e)) + "%", c / 2, d / 2 + 7),
-                b.fill(),
-                b.restore(),
-                a == e && (clearInterval(this.loadTimer), b.clearRect(0, 0, c, d), this.init(), this.loadfuc())
-            },
-            gameStart: function() {
-                this.stimer = this.requestAnimFrame(function() {
-                    this.gameStart()
-                }.bind(this)),
-                this.timeline && (this.tlinefuc(this.timeline), this.timeline++);
-                var a = (new Date).getTime();
-                this.__render(a - this.lastAnimationFrameTime),
-                this.lastAnimationFrameTime = a
-            },
-            gameOver: function() {
-                this.cancelAFrame(this.stimer)
-            },
-            ontimefuc: function(a) {
-                this.timeline = 1,
-                this.tlinefuc = a
-            },
-            offtimefuc: function() {
-                this.timeline = 0
-            },
-            addEventListener: function(a) {
-                function d(d) {
-                    if (eG.eventList[a]) {
-                        1 == d.targetTouches.length && (d.preventDefault(), d = d.targetTouches[0]),
-                        "touchend" == a && (d = d.changedTouches[0]);
-                        for (var e = eG.eventList[a], f = 0, g = e.length, h = new b.OBB(new eG.Vector2(d.pageX * c.p_x, d.pageY * c.p_x), 0, 0, 0); g > f; f++) {
-                            var i = e[f];
-                            if (eG.OBBvsOBB(h, i.testObb())) for (var j = 0,
-                            k = i.eventFuc[a].length; k > j; j++) i.eventFuc[a][j](d)
+                var leg = 0,
+                ctx = this.ctx,
+                canWidth = this.canWidth,
+                canHeight = this.canHeight,
+                imgLeg = this.imgList.length;
+                for (i in this.imgList) {
+                    if (i != "length") {
+                        if (this.imgList[i].complete) {
+                            leg++;
                         }
                     }
                 }
-                this.canvas.addEventListener(a, d);
-                var c = this
+                ctx.beginPath();
+                ctx.clearRect(0, 0, canWidth, canHeight);
+                ctx.fillStyle = "#000";
+                ctx.fillRect(0, 0, canWidth, canHeight);
+                ctx.beginPath();
+                var gradient = ctx.createLinearGradient(50, 0, canWidth, 0);
+                gradient.addColorStop(0, "#777");
+                gradient.addColorStop(Math.sin(this.l_t++%71 * Math.PI / 140), "#fff");
+                gradient.addColorStop(1, "#777");
+                ctx.fillStyle = gradient;
+                ctx.fillRect(50, canHeight / 2 - 10, (canWidth - 100) / imgLeg * leg, 14);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.lineWidth = "1";
+                ctx.strokeStyle = "#fff";
+                ctx.rect(46, canHeight / 2 - 13, (canWidth - 92), 20);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.fillStyle = "#eee";
+                ctx.font = "14px Arial bold";
+                ctx.fillText("LOADING...", canWidth / 2 - 100, canHeight / 2 + 36);
+                ctx.fillText(leg + "/" + imgLeg, canWidth / 2, canHeight / 2 + 36);
+                ctx.fill();
+                if (leg == imgLeg) {
+                    clearInterval(this.loadTimer);
+                    ctx.clearRect(0, 0, canWidth, canHeight);
+                    this.init();
+                    this.loadfuc();
+
+                }
             },
-            __drawFPS: function(a) {
-                var b = 1e3 / (a - this.lastAnimationFrameTime);
-                this.lastAnimationFrameTime = a,
-                a - this.lastFpsUpdateTime > 2e3 && (this.lastFpsUpdateTime = a, this._fps = b)
+
+            //游戏开始方法
+            gameStart: function() {
+                this.stimer = this.requestAnimFrame(function() {
+                    this.gameStart();
+                }.bind(this));
+
+                //通过时间轴管理游戏
+                if (this.timeline) {
+                    this.tlinefuc(this.timeline);
+                    this.timeline++;
+                }
+                //精灵状态更新
+                this.__update();
+                //精灵效果重绘
+                this.__render();
+                //输出fps信息
+                this.__drawFPS(new Date().getTime());
+
             },
-            __render: function(a) {
-                for (var b = 0,
-                c = this.objList.length; c > b; b++) {
-                    for (var d = 0,
-                    e = 0,
-                    f = this.objList[b]; e < f.length; e++) f[e].die && f.splice(e, 1);
-                    for (var g = f.length; g > d; d++) {
-                        var h = f[d];
-                        h.static || (h.x += this.__viewport.speed_x * a, h.y += this.__viewport.speed_y * a),
-                        h.update(a),
-                        h.render(a)
+
+            gameOver: function() {
+                this.cancelAFrame(this.stimer);
+            },
+
+            //管理时间轴函数
+            ontimefuc: function(fuc) {
+                this.timeline = 1;
+                this.tlinefuc = fuc;
+            },
+
+            offtimefuc: function() {
+                this.timeline = 0;
+            },
+
+            //通过碰撞检测模拟精灵事件
+            addEventListener: function(type) {
+                this.canvas.addEventListener(type, fuc);
+                var __self = this;
+                function fuc(e) {
+                    if (eG.eventList[type]) {
+                        var _x = e.pageX * __self.p_x,
+                        _y = e.pageY * __self.p_y,
+                        eventlist = eG.eventList[type],
+                        i = 0,
+                        len = eventlist.length;
+                        for (; i < len; i++) {
+                            var eventObj = eventlist[i];
+                            if (eG.OBBvsOBB(new easyGame.OBB(new eG.Vector2(_x, _y), 0, 0, 0), eventObj.testObb())) {
+                                for (var j = 0; j < eventObj.eventFuc[type].length; j++) {
+                                    eventObj.eventFuc[type][j](e);
+                                }
+                            }
+                        }
+                    }
+                }
+
+            },
+
+            //绘制帧数
+            __drawFPS: function(now) {
+                var fps = 1000 / (now - this.lastAnimationFrameTime);
+                this.lastAnimationFrameTime = now;
+                if (now - this.lastFpsUpdateTime > 2000) {
+                    this.lastFpsUpdateTime = now;
+                    this.fps = fps;
+                }
+                this.ctx.font = "18px Arial bold";
+                this.ctx.fillText(Math.round(this.fps) + 'FPS', 10, 26);
+            },
+
+            //绘制精灵
+            __render: function() {
+                //清空canvas
+                this.ctx.clearRect(0, 0, this.canWidth, this.canHeight);
+                var i = 0,
+                len = this.objList.length;
+                for (; i < len; i++) {
+                    var j = 0,
+                    obj = this.objList[i],
+                    len2 = obj.length;
+                    for (; j < len2; j++) {
+                        var o = obj[j];
+                        if (!o.static) {
+                            o.x += this.__viewport.speed_x;
+                            o.y += this.__viewport.speed_y;
+                        }
+                        o.update();
+                        o.render();
                     }
                 }
             },
+
+            //视口对象
             __viewport: {
                 speed_x: 0,
                 speed_y: 0
             },
-            setviewPort: function(a, b) {
-                this.__viewport.speed_x = a || 0,
-                this.__viewport.speed_y = b || 0
+
+            //设置视口速度，一般使角色跟随屏幕
+            setviewPort: function(x, y) {
+                this.__viewport.speed_x = x || 0;
+                this.__viewport.speed_y = y || 0;
             },
+
+            //精灵状态更新
+            __update: function() {
+                var i = 0,
+                len = this.objList.length;
+                for (; i < len; i++) {
+                    var j = 0,
+                    obj = this.objList[i];
+                    for (; j < obj.length; j++) {
+                        if (obj[j].die) {
+                            obj.splice(j, 1);
+                        }
+                    }
+                }
+            },
+
+            //游戏组件初始化
             init: function() {
-                this.lastAnimationFrameTime = (new Date).getTime(),
-                this.lastFpsUpdateTime = 0,
-                this.p_x = this.canWidth / document.documentElement.clientWidth,
-                this.p_y = this.canHeight / document.documentElement.clientHeight,
-                this.pos_y = document.documentElement.clientHeight * this.p_x,
-                this.requestAnimFrame = function() {
-                    var b, c = d.fps;
-                    return b = c ?
-                    function(b) {
-                        a.setTimeout(b, 1e3 / c)
-                    }: a.requestAnimationFrame || a.webkitRequestAnimationFrame || a.mozRequestAnimationFrame || a.oRequestAnimationFrame || a.msRequestAnimationFrame ||
-                    function(b) {
-                        a.setTimeout(b, 1e3 / 60)
+                this.lastAnimationFrameTime = 0; //计算fps
+                this.lastFpsUpdateTime = 0;
+
+                if (easyGame.versions.android || easyGame.versions.iPhone) {
+                    this.p_x = this.canWidth / window.innerWidth;
+                    this.p_y = this.canHeight / window.innerHeight;
+                }
+
+                this.requestAnimFrame = (function() {
+                    var raf, fps = target.fps;
+                    if (!fps) {
+                        raf = window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame ||
+                        function(callback, element) {
+                            window.setTimeout(callback, 1000 / 60);
+                        }
+                    } else {
+                        raf = function(callback, element) {
+                            window.setTimeout(callback, 1000 / fps);
+                        }
                     }
-                }.bind(this)().bind(),
-                this.cancelAFrame = function() {
-                    return a.cancelAnimationFrame || a.webkitCancelAnimationFrame || a.mozCancelAnimationFrame || a.oCancelAnimationFrame ||
-                    function(b) {
-                        a.clearTimeout(b)
-                    }
-                } ().bind()
+                    return raf;
+                })().bind();
+
+                this.cancelAFrame = (function() {
+                    return window.cancelAnimationFrame || window.webkitCancelAnimationFrame || window.mozCancelAnimationFrame || window.oCancelAnimationFrame ||
+                    function(id) {
+                        window.clearTimeout(id);
+                    };
+                })().bind();
+
             }
-        },
-        c.extend = function() {
-            var a, b, c, d, e = this;
-            if (null != (a = arguments[0])) for (b in a) c = e[b],
-            d = a[b],
-            e !== d && (e[b] = d);
-            return e
-        },
-        c
+        };
+
+        //对game对象进行拓展
+        game.extend = function() {
+            var options, name, src, copy, target = this;
+            if ((options = arguments[0]) != null) {
+                for (name in options) {
+                    src = target[name];
+                    copy = options[name]; //存储对象的值  
+                    if (target === copy) {
+                        continue;
+                    }
+                    target[name] = copy;
+                }
+            }
+
+            return target;
+        };
+        return game;
     };
-    b.versions = function() {
-        var a = navigator.userAgent;
-        return navigator.appVersion,
-        {
-            trident: a.indexOf("Trident") > -1,
-            presto: a.indexOf("Presto") > -1,
-            webKit: a.indexOf("AppleWebKit") > -1,
-            gecko: a.indexOf("Gecko") > -1 && -1 == a.indexOf("KHTML"),
-            ios: !!a.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/),
-            android: a.indexOf("Android") > -1 || a.indexOf("Linux") > -1,
-            iPhone: a.indexOf("iPhone") > -1,
-            iPad: a.indexOf("iPad") > -1,
-            webApp: -1 == a.indexOf("Safari")
+
+    //浏览器判断
+    easyGame.versions = function() {
+        var u = navigator.userAgent,
+        app = navigator.appVersion;
+        return { //移动终端浏览器版本信息
+            trident: u.indexOf('Trident') > -1,
+            //IE内核
+            presto: u.indexOf('Presto') > -1,
+            //opera内核
+            webKit: u.indexOf('AppleWebKit') > -1,
+            //苹果、谷歌内核
+            gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1,
+            //火狐内核
+            ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/),
+            //ios终端
+            android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1,
+            //android终端或者uc浏览器
+            iPhone: u.indexOf('iPhone') > -1,
+            //是否为iPhone或者QQHD浏览器
+            iPad: u.indexOf('iPad') > -1,
+            //是否iPad
+            webApp: u.indexOf('Safari') == -1 //是否web应该程序，没有头部与底部
+        };
+    } ()
+
+    //继承实现
+    easyGame.inherit = function(childClass, parentClass) {
+        var Constructor = new Function();
+        Constructor.prototype = parentClass.prototype;
+        childClass.prototype = new Constructor();
+        childClass.prototype.constructor = childClass;
+        childClass.superclass = parentClass.prototype;
+
+        if (childClass.prototype.constructor == Object.prototype.constructor) {
+            childClass.prototype.constructor = parentClass;
         }
-    } (),
-    b.inherit = function(a, b) {
-        var c = new Function;
-        c.prototype = b.prototype,
-        a.prototype = new c,
-        a.prototype.constructor = a,
-        a.superclass = b.prototype,
-        a.prototype.constructor == Object.prototype.constructor && (a.prototype.constructor = b)
-    },
-    b.extend = function(a, b) {
-        var c;
-        for (c in b) b.hasOwnProperty(c) && (a[c] = b[c]);
-        return a
-    },
-    b.createSprite = function(a) {
-        var c = function(c) {
-            b.extend(this, a),
-            b.Sprite.call(this, c)
-        };
-        return b.inherit(c, b.Sprite),
-        c
-    },
-    b.createBitmap = function(a) {
-        var c = function(c) {
-            b.extend(this, a),
-            b.Bitmap.call(this, c)
-        };
-        return b.inherit(c, b.Bitmap),
-        c
-    },
-    b.eventList = {},
-    b.DisplayObject = function(a) {
-        this.x = 0,
-        this.y = 0,
-        this.width = 0,
-        this.height = 0,
-        this.alpha = 1,
-        this.die = 0,
-        this.rotation = 0,
-        this.visible = 0,
-        this.scaleX = 1,
-        this.scaleY = 1,
-        this.globalCompositeOperation = "",
-        this.ctx = null,
-        this.obb = [],
-        this.eventFuc = {},
-        this.static = 0,
-        this.timeline = 0,
-        this.ontween = 0,
-        b.extend(this, a),
-        this.__init()
-    },
-    b.DisplayObject.prototype = {
-        __transform: function(a) {
-            a.translate(this.x, this.y),
-            this.alpha < 1 && (a.globalAlpha = this.alpha),
-            this.rotation && a.rotate(this.rotation),
-            (1 != this.scaleX || 1 != this.scaleY) && a.scale(this.scaleX, this.scaleY),
-            this.globalCompositeOperation && (a.globalCompositeOperation = this.globalCompositeOperation)
-        },
-        render: function(a) {
-            if (this.__tween(a), this.timeline++, !this.visible) {
-                var b = this.ctx;
-                b.save(),
-                this.__transform(b),
-                this.draw(b),
-                b.restore()
+    };
+
+    //构造函数属性继承
+    easyGame.extend = function(obj, newProperties) {
+        var key;
+        for (key in newProperties) {
+            if (newProperties.hasOwnProperty(key)) {
+                obj[key] = newProperties[key];
+            }
+        }
+        return obj;
+    };
+
+    //构造继承Sprite类的类型
+    easyGame.createSprite = function(arg) {
+        var newclass = function(_arg) {
+            easyGame.extend(this, arg);
+            easyGame.Sprite.call(this, _arg);
+        }
+        easyGame.inherit(newclass, easyGame.Sprite);
+        return newclass;
+    };
+
+    //构造继承Bitmap类的类型
+    easyGame.createBitmap = function(arg) {
+        var newclass = function(_arg) {
+            easyGame.extend(this, arg);
+            easyGame.Bitmap.call(this, _arg);
+        }
+        easyGame.inherit(newclass, easyGame.Bitmap);
+        return newclass;
+    };
+
+    //事件监听对象
+    easyGame.eventList = {};
+
+    //可视化元素基类
+    easyGame.DisplayObject = function(arg) {
+        this.x = 0;
+        this.y = 0;
+        this.width = 0;
+        this.height = 0;
+        //透明度
+        this.alpha = 1;
+        //是否删除此元素
+        this.die = 0;
+        //旋转角度
+        this.rotation = 0;
+        this.visible = 0;
+        //水平缩放
+        this.scaleX = 1;
+        //垂直缩放
+        this.scaleY = 1;
+        this.ctx = null;
+        //碰撞坐标
+        this.obb = [];
+        //事件执行函数列表
+        this.eventFuc = {};
+        //判断是否为静态，不随视口移动而移动
+        this.static = 0;
+        this.timeline = 0;
+        this.onBuffer = 0;
+        easyGame.extend(this, arg);
+        this.__init();
+    }
+
+    easyGame.DisplayObject.prototype = {
+
+        //矩阵变换
+        __transform: function(ctx) {
+            ctx.translate(this.x, this.y);
+            if (this.alpha < 1) {
+                ctx.globalAlpha = this.alpha;
+            }
+            if (this.rotation) {
+                ctx.rotate(this.rotation);
+            }
+
+            if (this.scaleX != 1 || this.scaleY != 1) {
+                context.scale(this.scaleX, this.scaleY);
             }
         },
-        addEventListener: function(a, c) {
-            b.eventList[a] || (b.eventList[a] = []),
-            this.eventFuc[a] || (this.eventFuc[a] = []),
-            b.eventList[a].push(this),
-            this.eventFuc[a].push(c.bind(this))
+
+        //绘制
+        render: function() {
+			
+            if (this.onBuffer) {
+                if (this.bufferTimer < this.duration) {
+                    for (i in this.bufferObj) {
+                        this[i] += this.bufferObj[i];
+                        this.bufferTimer++;
+                    }
+                } else {
+                    this.onBuffer = 0;
+                }
+            }
+			
+            this.timeline++;
+            if (!this.visible) {
+                var ctx = this.ctx;
+                ctx.save();
+                this.__transform(ctx);
+                this.draw(ctx);
+                ctx.restore();
+            }
         },
-        removeEventListener: function(a) {
-            b.eventList[a].splice(b.eventList[a].indexOf(this), 1),
-            this.eventFuc[a] = []
+
+        //添加监听的事件
+        addEventListener: function(type, fuc) {
+            if (!easyGame.eventList[type]) {
+                easyGame.eventList[type] = [];
+            }
+            if (!this.eventFuc[type]) {
+                this.eventFuc[type] = [];
+            }
+            easyGame.eventList[type].push(this);
+            this.eventFuc[type].push(fuc.bind(this));
         },
+
+        //删除监听的事件
+        removeEventListener: function(type) {
+            easyGame.eventList[type].splice(easyGame.eventList[type].indexOf(this), 1);
+            this.eventFuc[type] = [];
+        },
+
+        //obb矩形碰撞
         testObb: function() {
-            return new b.OBB(new b.Vector2(this.x - this.__obb_x, this.y - this.__obb_y), this.__w, this.__h, this.rotation)
+            //求碰撞中心点
+            return new easyGame.OBB(new easyGame.Vector2(this.x - this.__obb_x, this.y - this.__obb_y), this.__w, this.__h, this.rotation);
         },
+
+        //初始化
         __init: function() {
-            this.__w = this.obb[2] - this.obb[0],
-            this.__h = this.obb[3] - this.obb[1],
-            this.__obb_x = this.width / 2 - this.obb[0] - this.__w / 2,
-            this.__obb_y = this.height / 2 - this.obb[1] - this.__h / 2,
-            this.w = this.width,
-            this.h = this.height
+            this.__w = this.obb[2] - this.obb[0];
+            this.__h = this.obb[3] - this.obb[1];
+            this.__obb_x = this.width / 2 - this.obb[0] - this.__w / 2;
+            this.__obb_y = this.height / 2 - this.obb[1] - this.__h / 2;
         },
-        setObb: function(a) {
-            this.obb = a
+
+        //设置碰撞区域矩阵
+        setObb: function(obb) {
+            this.obb = obb;
         },
+
+        //检测是否移出了canvas
         checkBorder: function() {
-            return b.OBBvsOBB(this.testObb(), new OBB(new b.Vector2(canvas_w / 2, canvas_h / 2), canvas_w, canvas_h, 0))
+            return easyGame.OBBvsOBB(this.testObb(), new OBB(new easyGame.Vector2(canvas_w / 2, canvas_h / 2), canvas_w, canvas_h, 0));
         },
+
+        //移除此游戏精灵
         remove: function() {
             this.die = 1;
-            for (var a in this.eventFuc) this.removeEventListener(a)
         },
-        to: function(a, b, c, d, e, f) {
-            this.duration = b,
-            this.pattern = c || "Linear",
-            this.ease = d || "easeIn",
-            this.tween_obj = a,
-            this.ontween = 1,
-            this.current = 0,
-            this.delaytime = e || 0,
-            this.delaytime_t = 0,
-            this.fuc = f || null,
-            this.d_obj = {};
-            for (i in a) this.d_obj[i] = this[i]
-        },
-        __tween: function(a) {
-            if (this.ontween) if (this.delaytime_t >= this.delaytime) {
-                this.current += a;
-                for (i in this.tween_obj) this[i] = "Linear" == this.pattern ? b.Tween.Linear(this.current, this.d_obj[i], this.tween_obj[i] - this.d_obj[i], this.duration) : b.Tween[this.pattern][this.ease](this.current, this.d_obj[i], this.tween_obj[i] - this.d_obj[i], this.duration);
-                if (this.current >= this.duration) {
-                    for (i in this.tween_obj) this[i] = this.tween_obj[i];
-                    this.ontween = 0,
-                    this.delaytime_t = 0,
-                    this.fuc && this.fuc()
+        
+		//缓动
+        to: function(obj, timer) {
+            this.onBuffer = 1;
+            this.bufferTimer = 0;
+            this.duration = timer;
+            this.bufferObj = {};
+            for (i in obj) {
+                this.bufferObj[i] = (obj[i] - this[i]) / timer;
+            }
+        }
+
+    };
+
+    //图片基类
+    easyGame.Bitmap = function(arg) {
+        easyGame.DisplayObject.call(this, arg);
+    }
+    //继承自可视化类
+    easyGame.inherit(easyGame.Bitmap, easyGame.DisplayObject);
+    easyGame.Bitmap.prototype.draw = function(ctx) {
+        ctx.drawImage(this.img, 0, 0, this.width, this.height, -this.width / 2, -this.height / 2, this.width, this.height);
+    };
+    easyGame.Bitmap.prototype.update = function() {
+
+}
+
+    //游戏元素精灵类
+    easyGame.Sprite = function(arg) {
+        //动画对象
+        this.anim = null;
+        easyGame.DisplayObject.call(this, arg);
+
+    };
+    //继承自可视化类
+    easyGame.inherit(easyGame.Sprite, easyGame.DisplayObject);
+    easyGame.Sprite.prototype.draw = function(ctx) {
+        ctx.drawImage(this.anim.img, this.anim.x, this.anim.y, this.width, this.height, -this.width / 2, -this.height / 2, this.width, this.height);
+
+    };
+    easyGame.Sprite.prototype.setAnim = function(anim) {
+        this.anim = anim;
+    };
+
+    //计算动画帧数数组
+    easyGame.Animdata = function(img, i, j) {
+        var datalist = [],
+        h = img.height / i,
+        w = img.width / j,
+        m = 0;
+        for (; m < i; m++) {
+            for (var n = 0; n < j; n++) {
+                datalist.push([n * w, h * m]);
+            }
+        }
+        return datalist;
+    }
+
+    //游戏动画控制类
+    easyGame.Animation = function(arg) {
+        this.ctx = null;
+        this.img = null;
+        //帧数坐标数组
+        this.frames = [];
+        //判断动画是否循环
+        this.loop = 0;
+        //动画速度
+        this.speed = 1;
+        //当前帧数
+        this.speedList = [1, 2, 3, 4, 5, 6, 8, 10, 12, 15, 20, 25, 30, 40, 50];
+        this.frameIndex = 0;
+        easyGame.extend(this, arg);
+    }
+    easyGame.Animation.prototype = {
+        //动画状态更新
+        update: function() {
+            if (this.loop) { //循环播放动画
+                this.frameIndex += this.speedList[this.speed] / 20;
+                //toFixed(2)解决js加法小数不准问题
+                this.frameIndex = parseFloat(this.frameIndex.toFixed(3));
+                //如果循环，播放完返回第一帧
+                if (this.frameIndex == this.frames.length) {
+                    this.frameIndex = 0;
                 }
-            } else this.delaytime_t += a
+            } else {
+                if (this.frameIndex + this.speedList[this.speed] / 20 < this.frames.length) {
+                    this.frameIndex += this.speedList[this.speed] / 20;
+                    this.frameIndex = parseFloat(this.frameIndex.toFixed(3));
+                } else if (this.endfuc) {
+                    this.endfuc();
+                }
+            }
+            this.x = this.frames[Math.floor(this.frameIndex)][0];
+            this.y = this.frames[Math.floor(this.frameIndex)][1];
+        },
+
+        //设置动画结束函数
+        setEndfuc: function(endfuc) {
+            this.endfuc = endfuc;
+        },
+
+        setSpeed: function(s) {
+            this.speed = (s <= 14) ? s: 14;
+        },
+
+        //第index帧动画
+        goframe: function(index) {
+            this.frameIndex = index;
         }
-    },
-    b.Tween = {
-        Linear: function(a, b, c, d) {
-            return c * a / d + b
+    };
+
+    easyGame.TextField = function(arg) {
+        this.x = 0;
+        this.y = 0;
+        this.type = "text";
+        this.color = "#000";
+        this.size = "12px";
+        this.family = "Arial";
+        this.text = "";
+        this.weight = "normal";
+        this.die = 0;
+        this.ctx = null;
+        this.t = 0;
+        easyGame.extend(this, arg);
+    }
+    easyGame.TextField.prototype = {
+        render: function() {
+            var ctx = this.ctx;
+            ctx.save();
+            ctx.beginPath();
+            /*var grt = ctx.createLinearGradient(this.x, this.y, this.x, this.y + this.size);
+            grt.addColorStop(0, "#777");
+            grt.addColorStop(Math.sin(this.t % 50 * Math.PI / 50), "#fff");
+            grt.addColorStop(1, "#777");*/
+            ctx.fillStyle = "#fff";
+            ctx.font = this.size + "px " + this.family + " " + this.weight;
+            ctx.fillText(this.text, this.x, this.y + this.size);
+            ctx.fill();
+            ctx.restore();
+            this.t++;
         },
-        Quad: {
-            easeIn: function(a, b, c, d) {
-                return c * (a /= d) * a + b
-            },
-            easeOut: function(a, b, c, d) {
-                return - c * (a /= d) * (a - 2) + b
-            },
-            easeInOut: function(a, b, c, d) {
-                return (a /= d / 2) < 1 ? c / 2 * a * a + b: -c / 2 * (--a * (a - 2) - 1) + b
-            }
+        update: function() {
+
+}
+    };
+
+    easyGame.Math = {
+        //取随机数
+        random: function(n, m) {
+            return Math.floor(Math.random() * (m - n + 1) + n);
         },
-        Cubic: {
-            easeIn: function(a, b, c, d) {
-                return c * (a /= d) * a * a + b
-            },
-            easeOut: function(a, b, c, d) {
-                return c * ((a = a / d - 1) * a * a + 1) + b
-            },
-            easeInOut: function(a, b, c, d) {
-                return (a /= d / 2) < 1 ? c / 2 * a * a * a + b: c / 2 * ((a -= 2) * a * a + 2) + b
-            }
-        },
-        Quart: {
-            easeIn: function(a, b, c, d) {
-                return c * (a /= d) * a * a * a + b
-            },
-            easeOut: function(a, b, c, d) {
-                return - c * ((a = a / d - 1) * a * a * a - 1) + b
-            },
-            easeInOut: function(a, b, c, d) {
-                return (a /= d / 2) < 1 ? c / 2 * a * a * a * a + b: -c / 2 * ((a -= 2) * a * a * a - 2) + b
-            }
-        },
-        Quint: {
-            easeIn: function(a, b, c, d) {
-                return c * (a /= d) * a * a * a * a + b
-            },
-            easeOut: function(a, b, c, d) {
-                return c * ((a = a / d - 1) * a * a * a * a + 1) + b
-            },
-            easeInOut: function(a, b, c, d) {
-                return (a /= d / 2) < 1 ? c / 2 * a * a * a * a * a + b: c / 2 * ((a -= 2) * a * a * a * a + 2) + b
-            }
-        },
-        Sine: {
-            easeIn: function(a, b, c, d) {
-                return - c * Math.cos(a / d * (Math.PI / 2)) + c + b
-            },
-            easeOut: function(a, b, c, d) {
-                return c * Math.sin(a / d * (Math.PI / 2)) + b
-            },
-            easeInOut: function(a, b, c, d) {
-                return - c / 2 * (Math.cos(Math.PI * a / d) - 1) + b
-            }
-        },
-        Expo: {
-            easeIn: function(a, b, c, d) {
-                return 0 == a ? b: c * Math.pow(2, 10 * (a / d - 1)) + b
-            },
-            easeOut: function(a, b, c, d) {
-                return a == d ? b + c: c * ( - Math.pow(2, -10 * a / d) + 1) + b
-            },
-            easeInOut: function(a, b, c, d) {
-                return 0 == a ? b: a == d ? b + c: (a /= d / 2) < 1 ? c / 2 * Math.pow(2, 10 * (a - 1)) + b: c / 2 * ( - Math.pow(2, -10 * --a) + 2) + b
-            }
-        },
-        Circ: {
-            easeIn: function(a, b, c, d) {
-                return - c * (Math.sqrt(1 - (a /= d) * a) - 1) + b
-            },
-            easeOut: function(a, b, c, d) {
-                return c * Math.sqrt(1 - (a = a / d - 1) * a) + b
-            },
-            easeInOut: function(a, b, c, d) {
-                return (a /= d / 2) < 1 ? -c / 2 * (Math.sqrt(1 - a * a) - 1) + b: c / 2 * (Math.sqrt(1 - (a -= 2) * a) + 1) + b
-            }
-        },
-        Elastic: {
-            easeIn: function(a, b, c, d, e, f) {
-                if (0 == a) return b;
-                if (1 == (a /= d)) return b + c;
-                if (f || (f = .3 * d), !e || e < Math.abs(c)) {
-                    e = c;
-                    var g = f / 4
-                } else var g = f / (2 * Math.PI) * Math.asin(c / e);
-                return - (e * Math.pow(2, 10 * (a -= 1)) * Math.sin((a * d - g) * 2 * Math.PI / f)) + b
-            },
-            easeOut: function(a, b, c, d, e, f) {
-                if (0 == a) return b;
-                if (1 == (a /= d)) return b + c;
-                if (f || (f = .3 * d), !e || e < Math.abs(c)) {
-                    e = c;
-                    var g = f / 4
-                } else var g = f / (2 * Math.PI) * Math.asin(c / e);
-                return e * Math.pow(2, -10 * a) * Math.sin((a * d - g) * 2 * Math.PI / f) + c + b
-            },
-            easeInOut: function(a, b, c, d, e, f) {
-                if (0 == a) return b;
-                if (2 == (a /= d / 2)) return b + c;
-                if (f || (f = d * .3 * 1.5), !e || e < Math.abs(c)) {
-                    e = c;
-                    var g = f / 4
-                } else var g = f / (2 * Math.PI) * Math.asin(c / e);
-                return 1 > a ? -.5 * e * Math.pow(2, 10 * (a -= 1)) * Math.sin((a * d - g) * 2 * Math.PI / f) + b: .5 * e * Math.pow(2, -10 * (a -= 1)) * Math.sin((a * d - g) * 2 * Math.PI / f) + c + b
-            }
-        },
-        Back: {
-            easeIn: function(a, b, c, d, e) {
-                return void 0 == e && (e = 1.70158),
-                c * (a /= d) * a * ((e + 1) * a - e) + b
-            },
-            easeOut: function(a, b, c, d, e) {
-                return void 0 == e && (e = 1.70158),
-                c * ((a = a / d - 1) * a * ((e + 1) * a + e) + 1) + b
-            },
-            easeInOut: function(a, b, c, d, e) {
-                return void 0 == e && (e = 1.70158),
-                (a /= d / 2) < 1 ? c / 2 * a * a * (((e *= 1.525) + 1) * a - e) + b: c / 2 * ((a -= 2) * a * (((e *= 1.525) + 1) * a + e) + 2) + b
-            }
-        },
-        Bounce: {
-            easeIn: function(a, b, c, d) {
-                return c - this.easeOut(d - a, 0, c, d) + b
-            },
-            easeOut: function(a, b, c, d) {
-                return (a /= d) < 1 / 2.75 ? c * 7.5625 * a * a + b: 2 / 2.75 > a ? c * (7.5625 * (a -= 1.5 / 2.75) * a + .75) + b: 2.5 / 2.75 > a ? c * (7.5625 * (a -= 2.25 / 2.75) * a + .9375) + b: c * (7.5625 * (a -= 2.625 / 2.75) * a + .984375) + b
-            },
-            easeInOut: function(a, b, c, d) {
-                return d / 2 > a ? .5 * this.easeIn(2 * a, 0, c, d) + b: .5 * this.easeOut(2 * a - d, 0, c, d) + .5 * c + b
-            }
+
+        //获得坐标旋转后坐标
+        coordinate: function(x, y, cen_x, cen_y, arc) {
+            var m = (x - cen_x) * Math.cos(arc),
+            n = (y - cen_y) * Math.sin(arc);
+            return [Math.round(m - n + cen_x), Math.round(m + n + cen_x)];
         }
-    },
-    b.Bitmap = function(a) {
-        b.DisplayObject.call(this, a)
-    },
-    b.inherit(b.Bitmap, b.DisplayObject),
-    b.Bitmap.prototype.draw = function(a) {
-        a.drawImage(this.img, 0, 0, this.width, this.height, -this.w / 2, -this.h / 2, this.w, this.h)
-    },
-    b.Bitmap.prototype.update = function() {},
-    b.Sprite = function(a) {
-        this.anim = null,
-        b.DisplayObject.call(this, a)
-    },
-    b.inherit(b.Sprite, b.DisplayObject),
-    b.Sprite.prototype.draw = function(a) {
-        a.drawImage(this.anim.img, this.anim.x, this.anim.y, this.width, this.height, -this.width / 2, -this.height / 2, this.width, this.height)
-    },
-    b.Sprite.prototype.setAnim = function(a) {
-        this.anim = a
-    },
-    b.Animdata = function(a, b, c) {
-        for (var d = [], e = a.height / b, f = a.width / c, g = 0; b > g; g++) for (var h = 0; c > h; h++) d.push([h * f, e * g]);
-        return d
-    },
-    b.Animation = function(a) {
-        this.ctx = null,
-        this.img = null,
-        this.frames = [],
-        this.loop = 0,
-        this.speed = 1,
-        this.__speed_t = 0,
-        this.duration = 0,
-        this.frameIndex = 0,
-        this.onplay = 1,
-        b.extend(this, a),
-        this.len = this.frames.length
-    },
-    b.Animation.prototype = {
-        update: function(a) {
-            this.onplay && (this.__speed_t += a * this.speed, this.__speed_t >= this.duration && this.__nextFrame(Math.floor(this.__speed_t / this.duration)), this.x = this.frames[this.frameIndex][0], this.y = this.frames[this.frameIndex][1])
+
+    };
+
+    //检测矩形碰撞
+    easyGame.OBB = function(centerPoint, width, height, rotation) {
+        this.centerPoint = centerPoint;
+        this.extents = [width / 2, height / 2];
+        this.axes = [new easyGame.Vector2(Math.cos(rotation), Math.sin(rotation)), new easyGame.Vector2( - Math.sin(rotation), Math.cos(rotation))];
+        this._width = width;
+        this._height = height;
+        this._rotation = rotation;
+    }
+    easyGame.OBB.prototype.getRadius = function(axis) {
+        return this.extents[0] * Math.abs(axis.dot(this.axes[0])) + this.extents[1] * Math.abs(axis.dot(this.axes[1]));
+    }
+
+    //中心点
+    easyGame.Vector2 = function(x, y) {
+        this.x = x || 0;
+        this.y = y || 0;
+    };
+
+    easyGame.Vector2.prototype = {
+        sub: function(v) {
+            return new easyGame.Vector2(this.x - v.x, this.y - v.y)
         },
-        setEndfuc: function(a) {
-            this.endfuc = a
-        },
-        setSpeed: function(a) {
-            this.speed = a,
-            this.__speed_t = 0
-        },
-        stop: function() {
-            this.onplay = 0
-        },
-        play: function() {
-            this.onplay = 1
-        },
-        __nextFrame: function(a) {
-            this.frameIndex < this.len - a ? this.goframe(this.frameIndex + a) : this.loop ? this.goframe(0) : (this.endfuc && this.endfuc(), this.stop())
-        },
-        goframe: function(a) {
-            this.frameIndex = a,
-            this.__speed_t = 0
+        dot: function(v) {
+            return this.x * v.x + this.y * v.y;
         }
-    },
-    b.TextField = function(a) {
-        this.type = "text",
-        this.color = "#000",
-        this.size = "12px",
-        this.family = "Arial",
-        this.text = "",
-        this.weight = "normal",
-        this.textAlign = "left",
-        b.DisplayObject.call(this, a)
-    },
-    b.inherit(b.TextField, b.DisplayObject),
-    b.TextField.prototype.draw = function(a) {
-        a.fillStyle = this.color,
-        a.textAlign = this.textAlign,
-        a.font = this.weight + " " + this.size + "px " + this.family,
-        a.fillText(this.text, 0, 0),
-        a.fill()
-    },
-    b.TextField.prototype.update = function() {},
-    b.Math = {
-        random: function(a, b) {
-            return Math.floor(Math.random() * (b - a + 1) + a)
-        },
-        coordinate: function(a, b, c, d, e) {
-            var f = (a - c) * Math.cos(e),
-            g = (b - d) * Math.sin(e);
-            return [Math.round(f - g + c), Math.round(f + g + c)]
+    };
+
+    //矩形碰撞检测函数
+    easyGame.OBBvsOBB = function(OBB1, OBB2) {
+        var nv = OBB1.centerPoint.sub(OBB2.centerPoint),
+        axisA1 = OBB1.axes[0],
+        axisA2 = OBB1.axes[1],
+        axisB1 = OBB2.axes[0],
+        axisB2 = OBB2.axes[1];
+        if ((OBB1.getRadius(axisB2) + OBB2.getRadius(axisB2) <= Math.abs(nv.dot(axisB2))) || (OBB1.getRadius(axisB1) + OBB2.getRadius(axisB1) <= Math.abs(nv.dot(axisB1))) || (OBB1.getRadius(axisA2) + OBB2.getRadius(axisA2) <= Math.abs(nv.dot(axisA2))) || (OBB1.getRadius(axisA1) + OBB2.getRadius(axisA1) <= Math.abs(nv.dot(axisA1)))) {
+            return 0;
         }
-    },
-    b.OBB = function(a, c, d, e) {
-        this.centerPoint = a,
-        this.extents = [c / 2, d / 2],
-        this.axes = [new b.Vector2(Math.cos(e), Math.sin(e)), new b.Vector2( - Math.sin(e), Math.cos(e))],
-        this._width = c,
-        this._height = d,
-        this._rotation = e
-    },
-    b.OBB.prototype.getRadius = function(a) {
-        return this.extents[0] * Math.abs(a.dot(this.axes[0])) + this.extents[1] * Math.abs(a.dot(this.axes[1]))
-    },
-    b.Vector2 = function(a, b) {
-        this.x = a || 0,
-        this.y = b || 0
-    },
-    b.Vector2.prototype = {
-        sub: function(a) {
-            return new b.Vector2(this.x - a.x, this.y - a.y)
-        },
-        dot: function(a) {
-            return this.x * a.x + this.y * a.y
-        }
-    },
-    b.OBBvsOBB = function(a, b) {
-        var c = a.centerPoint.sub(b.centerPoint),
-        d = a.axes[0],
-        e = a.axes[1],
-        f = b.axes[0],
-        g = b.axes[1];
-        return a.getRadius(g) + b.getRadius(g) <= Math.abs(c.dot(g)) || a.getRadius(f) + b.getRadius(f) <= Math.abs(c.dot(f)) || a.getRadius(e) + b.getRadius(e) <= Math.abs(c.dot(e)) || a.getRadius(d) + b.getRadius(d) <= Math.abs(c.dot(d)) ? 0 : 1
-    },
-    a.eG = a.easyGame = b
-} (window);
+        return 1;
+    }
+
+    window.eG = window.easyGame = easyGame;
+})(window)

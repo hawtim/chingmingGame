@@ -3,20 +3,21 @@
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
         <meta name="description" content="爱乡宝，爱乡筹，家乡圈，我的家乡圈，村落主页，爱家乡，家乡互助" />
-        <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, user-scalable=no" />
+        <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-touch-fullscreen" content="yes" />
         <meta name="full-screen" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black" />
         <meta name="format-detection" content="telephone=no" />
         <meta name="format-detection" content="address=no" />
+        <link rel="shortcut icon" href="./favicon.ico">
         <title>爱乡宝-清明时节雨纷飞</title>
         <link rel="stylesheet" href="./css/index.css">
     </head>
     <body>
         <div class="play-status" id="togglePlayStatus">
-            <img id="playing" style="display: block;" src="./img/voice-open.png">
-            <img id="muted" style="display: none;" src="./img/voice-close.png">
+            <img id="playing" style="display: none;" src="./img/voice-open.png">
+            <img id="muted" style="display: block;" src="./img/voice-close.png">
         </div>
         <div class="musicinfo">
             <audio id="audioPlayer" src="./img/1.mp3" preload="preload" autoplay loop="loop"></audio>
@@ -35,12 +36,11 @@
             <img src="./img/share.png" ontouchstart="hideShare()" />
         </div>
         <script src="js/rem.js"></script>
-        <script src="js/eG.js"></script>
-        <!-- <script src="js/buzz.js"></script> -->
+        <script src="js/easyGame.min.js"></script>
+        <script src="js/buzz.js"></script>
         <script src="js/loading.js"></script>
         <script src="js/index.js"></script>
         <script src="js/share.js"></script>
-        <script src="js/result.js"></script>
         <script src="js/playMusic.js"></script>
     </body>
 </html>
