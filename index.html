@@ -1,213 +1,46 @@
-<!DOCTYPE HTML>
+<!DOCTYPE html>
 <html>
-	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-	<meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, user-scalable=no">
-	<meta name="apple-mobile-web-app-capable" content="yes">
-	<meta name='apple-touch-fullscreen' content='yes'>
-	<meta name="full-screen" content="yes">
-	<meta name="apple-mobile-web-app-status-bar-style" content="black">
-	<meta name="format-detection" content="telephone=no">
-	<meta name="format-detection" content="address=no">
-
-	<head>
-		<div id='wx_pic' style='margin:0 auto;display:none;'>
-			<img src='photo.jpg' /></div>
-		<title>爱乡宝-清明时节雨纷飞</title>
-		<style type="text/css">
-			.gameOn {
-				-webkit-animation: game 1s 1 ease-in;
-			}
-
-			@-webkit-keyframes game {
-				0% {
-					-webkit-transform: translate3d(-4px, 0px, 0px);
-				}
-
-				10% {
-					-webkit-transform: translate3d(4px, 0px, 0px);
-				}
-
-				20% {
-					-webkit-transform: translate3d(-4px, 0px, 0px);
-				}
-
-				30% {
-					-webkit-transform: translate3d(4px, 0px, 0px);
-				}
-
-				40% {
-					-webkit-transform: translate3d(-4px, 0px, 0px);
-				}
-
-				50% {
-					-webkit-transform: translate3d(4px, 0px, 0px);
-				}
-
-				60% {
-					-webkit-transform: translate3d(-4px, 0px, 0px);
-				}
-
-				70% {
-					-webkit-transform: translate3d(4px, 0px, 0px);
-				}
-
-				80% {
-					-webkit-transform: translate3d(-4px, 0px, 0px);
-				}
-
-				90% {
-					-webkit-transform: translate3d(4px, 0px, 0px);
-				}
-
-				100% {
-					-webkit-transform: translate3d(0px, 0px, 0px);
-				}
-			}
-
-		</style>
-
-	</head>
-
-	<body style="padding:0;margin:0">
-		<!-- 音乐 start-->
-		<div class="musicinfo" id="musicinfo">
-			<audio id="musicid" src="img/1.mp3" preload="preload" autoplay loop="loop">您的浏览器不支持 audio标签。</audio>
-		</div>
-		<!-- 音乐 end-->
-		<script type="text/javascript">
-			// 音乐播放
-			function autoPlayMusic() {
-				// 自动播放音乐效果，解决浏览器或者APP自动播放问题
-				function musicInBrowserHandler() {
-					musicPlay(true);
-					document.body.removeEventListener('touchstart', musicInBrowserHandler);
-				}
-				document.body.addEventListener('touchstart', musicInBrowserHandler);
-
-				// 自动播放音乐效果，解决微信自动播放问题
-				function musicInWeixinHandler() {
-					musicPlay(true);
-					document.addEventListener("WeixinJSBridgeReady", function () {
-						musicPlay(true);
-					}, false);
-					document.removeEventListener('DOMContentLoaded', musicInWeixinHandler);
-				}
-				document.addEventListener('DOMContentLoaded', musicInWeixinHandler);
-			}
-
-			function musicPlay(isPlay) {
-				var audio = document.getElementById('musicid');
-				if (isPlay && audio.paused) {
-					audio.play();
-				}
-				if (!isPlay && !audio.paused) {
-					audio.pause();
-				}
-			}
-			autoPlayMusic();
-
-		</script>
-		<script src="js/shanku_loading.js"></script>
-		<div class="game" style="width:100%; height:100%;position:absolute;overflow: hidden;-webkit-transform:translate3d(0px, 0px, 0px);left:0px;top:0px;">
-			<canvas id="myCanvas" class="" style="position:absolute;overflow:visible;-webkit-transform:translate3d(0px, 0px, 0px);left:0px;top:0;width:100%"
-			 width="360" height="645"></canvas>
-
-		</div>
-
-		<script src="js/easyGame.js" type="text/javascript"></script>
-		<script language=javascript>
-			var mebtnopenurl = '#';
-			var thegameurl = "#";
-			var guanzhuurl = "#";
-			window.shareData = {
-				"imgUrl": "#",
-				"timeLineLink": thegameurl,
-				"tTitle": "清明时节雨纷飞",
-				"tContent": "清明时节雨纷飞"
-			};
-
-			function goHome() {
-				window.location = mebtnopenurl;
-			}
-
-			function clickMore() {
-				if ((window.location + "").indexOf("f=zf", 1) > 0) {
-					window.location = mebtnopenurl;
-				} else {
-					goHome();
-				}
-			}
-
-			function dp_share() {
-				document.getElementById("share").style.display = "";
-
-			}
-
-			function dp_Ranking() {
-				window.location = mebtnopenurl;
-			}
-
-			function showAd() {}
-
-			function hideAd() {}
-			document.addEventListener('WeixinJSBridgeReady', function onBridgeReady() {
-
-				WeixinJSBridge.on('menu:share:appmessage', function (argv) {
-					WeixinJSBridge.invoke('sendAppMessage', {
-						"img_url": window.shareData.imgUrl,
-						"link": window.shareData.timeLineLink,
-						"desc": window.shareData.tContent,
-						"title": window.shareData.tTitle
-					}, onShareComplete);
-				});
-
-				WeixinJSBridge.on('menu:share:timeline', function (argv) {
-					WeixinJSBridge.invoke('shareTimeline', {
-						"img_url": window.shareData.imgUrl,
-						"img_width": "640",
-						"img_height": "640",
-						"link": window.shareData.timeLineLink,
-						"desc": window.shareData.tContent,
-						"title": window.shareData.tTitle
-					}, onShareComplete);
-				});
-			}, false);
-
-		</script>
-		<div id=share style="display: none">
-			<img width=100% src="share.png" style="position: fixed; z-index: 9999; top: 0; left: 0; display: " ontouchstart="document.getElementById('share').style.display='none';" />
-		</div>
-		<div style="display: none;">
-			<script type="text/javascript">
-				var myData = {
-					gameid: "zfj"
-				};
-
-				function dp_submitScore(score) {
-					myData.score = parseInt(score * 10);
-					myData.scoreName = "行走了" + score + "米";
-					document.title = "在寻根的路上，我行走了" + score + "米，小伙伴们快来挑战我吧！";
-					window.shareData.tTitle = document.title;
-				}
-
-				function onShareComplete(res) {
-					if (localStorage.myuid && myData.score != undefined) {
-						setTimeout(function () {
-							if (confirm("？")) {
-								window.location = mebtnopenurl;
-							} else {
-								document.location.href = mebtnopenurl;
-							}
-						}, 500);
-					} else {
-						document.location.href = guanzhuurl;
-					}
-				}
-
-			</script>
-			<div style="display: none;">
-				<script type="text/javascript" src="#" charset="UTF-8"></script>
-			</div>
-	</body>
-
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta name="description" content="爱乡宝，爱乡筹，家乡圈，我的家乡圈，村落主页，爱家乡，家乡互助" />
+        <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, user-scalable=no" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-touch-fullscreen" content="yes" />
+        <meta name="full-screen" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+        <meta name="format-detection" content="telephone=no" />
+        <meta name="format-detection" content="address=no" />
+        <title>爱乡宝-清明时节雨纷飞</title>
+        <link rel="stylesheet" href="./css/index.css">
+    </head>
+    <body>
+        <div class="play-status" id="togglePlayStatus">
+            <img id="playing" style="display: block;" src="./img/voice-open.png">
+            <img id="muted" style="display: none;" src="./img/voice-close.png">
+        </div>
+        <div class="musicinfo">
+            <audio id="audioPlayer" src="./img/1.mp3" preload="preload" autoplay loop="loop"></audio>
+        </div>
+        <div class="game">
+            <canvas id="myCanvas" width="360" height="645"></canvas>
+        </div>
+        <div class="modal">
+            <div class="modal-bg">
+                <div class="close-modal"></div>
+                <div class="modal-content"></div>
+                <div class="modal-button"></div>
+            </div>
+        </div>
+        <div id="shareImage" style="display: none;">
+            <img src="./img/share.png" ontouchstart="hideShare()" />
+        </div>
+        <script src="js/rem.js"></script>
+        <script src="js/eG.js"></script>
+        <!-- <script src="js/buzz.js"></script> -->
+        <script src="js/loading.js"></script>
+        <script src="js/index.js"></script>
+        <script src="js/share.js"></script>
+        <script src="js/result.js"></script>
+        <script src="js/playMusic.js"></script>
+    </body>
 </html>
